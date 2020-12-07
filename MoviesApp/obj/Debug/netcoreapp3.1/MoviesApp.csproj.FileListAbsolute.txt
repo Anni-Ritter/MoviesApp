@@ -76,8 +76,6 @@ C:\Users\Asus\source\repos\MoviesApp\MoviesApp\bin\Debug\netcoreapp3.1\MoviesApp
 C:\Users\Asus\source\repos\MoviesApp\MoviesApp\bin\Debug\netcoreapp3.1\MoviesApp.pdb
 C:\Users\Asus\source\repos\MoviesApp\MoviesApp\bin\Debug\netcoreapp3.1\MoviesApp.Views.dll
 C:\Users\Asus\source\repos\MoviesApp\MoviesApp\bin\Debug\netcoreapp3.1\MoviesApp.Views.pdb
-C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\MoviesApp.csproj.CoreCompileInputs.cache
-C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\MoviesApp.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\MoviesApp.Views.pdb
 C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\MoviesApp.dll
 C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\MoviesApp.pdb
@@ -87,3 +85,7 @@ C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\Razor\Vie
 C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\Razor\Views\Actors\Details.cshtml.g.cs
 C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\Razor\Views\Actors\Edit.cshtml.g.cs
 C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\Razor\Views\Actors\Index.cshtml.g.cs
+C:\Users\Asus\source\repos\MoviesApp\MoviesApp\bin\Debug\netcoreapp3.1\AutoMapper.dll
+C:\Users\Asus\source\repos\MoviesApp\MoviesApp\bin\Debug\netcoreapp3.1\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
+C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\MoviesApp.csproj.CoreCompileInputs.cache
+C:\Users\Asus\source\repos\MoviesApp\MoviesApp\obj\Debug\netcoreapp3.1\MoviesApp.MvcApplicationPartsAssemblyInfo.cache

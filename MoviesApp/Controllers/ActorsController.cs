@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MoviesApp.Data;
+using MoviesApp.Filters;
 using MoviesApp.Models;
 using MoviesApp.ViewModels;
 
@@ -74,6 +75,7 @@ namespace MoviesApp.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [CheckAgeActor]
         public IActionResult Create([Bind("Name, LastName, BirthDate")] InputActorViewModel inputModel)
         {
             if (ModelState.IsValid)
@@ -117,6 +119,7 @@ namespace MoviesApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [CheckAgeActor]
         public IActionResult Edit(int id, [Bind("Name, LastName, BirthDate")] EditActorViewModel editModel)
         {
             if (ModelState.IsValid)
