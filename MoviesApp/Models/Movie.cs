@@ -8,7 +8,7 @@ namespace MoviesApp.Models
     {
         public Movie()
         {
-            this.MovieActors = new HashSet<MovieActor>();
+            this.MoviesActors = new HashSet<MoviesActors>();
         }
         [Key]
         public int Id { get; set; }
@@ -19,6 +19,6 @@ namespace MoviesApp.Models
         public string Genre { get; set; }
         public decimal Price { get; set; }
 
-        public virtual ICollection<MovieActor> MovieActors { get; set; }
+        public virtual ICollection<MoviesActors> MoviesActors { get; set; }
     }
 }

@@ -5,6 +5,7 @@ namespace MoviesApp.ViewModels
 {
     public class InputMovieViewModel
     {
+        public int? Id { get; set; }
         public string Title { get; set; }
         
         [DataType(DataType.Date)]

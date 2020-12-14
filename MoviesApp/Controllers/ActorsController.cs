@@ -1,43 +1,43 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MoviesApp.Data;
 using MoviesApp.Filters;
 using MoviesApp.Models;
+using MoviesApp.Services;
+using MoviesApp.Services.Dto;
 using MoviesApp.ViewModels;
 
 namespace MoviesApp.Controllers
 {
     public class ActorsController: Controller
     {
-        private readonly MoviesContext _context;
+        private readonly IMapper _mapper;
         private readonly ILogger<HomeController> _logger;
+        private readonly IActorService _service;        
 
-
-        public ActorsController(MoviesContext context, ILogger<HomeController> logger)
+        public ActorsController(ILogger<HomeController> logger, IMapper mapper, IActorService service)
         {
-            _context = context;
             _logger = logger;
+            _mapper = mapper;
+            _service = service;
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult Index()
         {
-            return View(_context.Actors
-                .Include(a => a.MovieActors)
-                .Select(a => new ActorViewModel
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    LastName = a.LastName,
-                    BirthDate = a.BirthDate,
-                    Movies = a.MovieActors
-                }).ToList());
+            var actors = _mapper.Map<IEnumerable<ActorDto>, IEnumerable<ActorViewModel>>(_service.GetAllActors());
+            return View(actors);
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult Details(int? id)
         {
             if (id == null)
@@ -45,19 +45,8 @@ namespace MoviesApp.Controllers
                 return NotFound();
             }
 
-            var viewModel = _context.Actors.Where(a => a.Id == id)
-                .Include(a => a.MovieActors)
-                    .ThenInclude(a => a.Movie)
-                .Select(a => new ActorViewModel
-                {
-                    Id = a.Id,
-                    Name = a.Name,
-                    LastName = a.LastName,
-                    BirthDate = a.BirthDate,
-                    Movies = a.MovieActors
-                }).FirstOrDefault();
+            var viewModel = _mapper.Map<ActorViewModel>(_service.GetActor((int)id));
 
-            
             if (viewModel == null)
             {
                 return NotFound();
@@ -67,6 +56,7 @@ namespace MoviesApp.Controllers
         }
         
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -74,19 +64,14 @@ namespace MoviesApp.Controllers
 
         
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         [CheckAgeActor]
         public IActionResult Create([Bind("Name, LastName, BirthDate")] InputActorViewModel inputModel)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(new Actor
-                {
-                    Name = inputModel.Name,
-                    LastName = inputModel.LastName,
-                    BirthDate = inputModel.BirthDate
-                });
-                _context.SaveChanges();
+                _service.AddActor(_mapper.Map<ActorDto>(inputModel));
 
                 return RedirectToAction(nameof(Index));
             }
@@ -94,6 +79,7 @@ namespace MoviesApp.Controllers
         }
         
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Edit(int? id)
         {
             if (id == null)
@@ -101,12 +87,7 @@ namespace MoviesApp.Controllers
                 return NotFound();
             }
 
-            var editModel = _context.Actors.Where(a => a.Id == id).Select(a => new EditActorViewModel
-            {
-                Name = a.Name,
-                LastName = a.LastName,
-                BirthDate = a.BirthDate
-            }).FirstOrDefault();
+            var editModel = _mapper.Map<EditActorViewModel>(_service.GetActor((int)id));
             
             if (editModel == null)
             {
@@ -118,35 +99,21 @@ namespace MoviesApp.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         [CheckAgeActor]
         public IActionResult Edit(int id, [Bind("Name, LastName, BirthDate")] EditActorViewModel editModel)
         {
             if (ModelState.IsValid)
             {
-                try
+                var actor = _mapper.Map<ActorDto>(editModel);
+                actor.Id = id;
+
+                var result = _service.UpdateActor(actor);
+
+                if (result == null)
                 {
-                    var actor = new Actor
-                    {
-                        Id = id,
-                        Name = editModel.Name,
-                        LastName = editModel.LastName,
-                        BirthDate = editModel.BirthDate
-                    };
-                    
-                    _context.Update(actor);
-                    _context.SaveChanges();
-                }
-                catch (DbUpdateException)
-                {
-                    if (!ActorExists(id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return NotFound();
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -154,6 +121,7 @@ namespace MoviesApp.Controllers
         }
         
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int? id)
         {
             if (id == null)
@@ -161,12 +129,7 @@ namespace MoviesApp.Controllers
                 return NotFound();
             }
 
-            var deleteModel = _context.Actors.Where(a => a.Id == id).Select(a => new DeleteActorViewModel
-            {
-               Name = a.Name,
-               LastName = a.LastName,
-               BirthDate = a.BirthDate
-            }).FirstOrDefault();
+            var deleteModel = _mapper.Map<DeleteActorViewModel>(_service.GetActor((int) id));
             
             if (deleteModel == null)
             {
@@ -177,19 +140,17 @@ namespace MoviesApp.Controllers
         }
         
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
         {
-            var actor = _context.Actors.Find(id);
-            _context.Actors.Remove(actor);
-            _context.SaveChanges();
-            _logger.LogError($"Actor with id {actor.Id} has been deleted!");
+            var actor = _service.DeleteActor(id);
+            if(actor == null)
+            {
+                return NotFound();
+            }
+            _logger.LogTrace($"Actor with id {actor.Id} has been deleted!");
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ActorExists(int id)
-        {
-            return _context.Actors.Any(e => e.Id == id);
         }
     }
 }

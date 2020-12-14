@@ -1,10 +1,7 @@
 using System.Collections.Generic;
-using System.Linq;
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MoviesApp.Data;
-using MoviesApp.Models;
+using MoviesApp.Services;
+using MoviesApp.Services.Dto;
 using MoviesApp.ViewModels;
 
 namespace MoviesApp.Controllers
@@ -13,83 +10,57 @@ namespace MoviesApp.Controllers
     [ApiController]
     public class ActorsApiController : ControllerBase
     {
-        private readonly MoviesContext _context;
-        private readonly IMapper _mapper;
+        private readonly IActorService _service;
 
-        public ActorsApiController(MoviesContext context, IMapper mapper)
+        public ActorsApiController(IActorService service)
         {
-            _context = context;
-            _mapper = mapper;
+            _service = service;
         }
 
         [HttpGet]
         [ProducesResponseType(200, Type = typeof(IEnumerable<ActorViewModel>))]
         [ProducesResponseType(404)]
-        public ActionResult<IEnumerable<ActorViewModel>> GetActors()
+        public ActionResult<IEnumerable<ActorDto>> GetActors()
         {
-            var actors = _mapper.Map<IEnumerable<Actor>, IEnumerable<ActorViewModel>>(_context.Actors.ToList());
-            return Ok(actors);
+            return Ok(_service.GetAllActors());
         }
 
         [HttpGet("{id}")]
-        [ProducesResponseType(200, Type = typeof(ActorViewModel))]
+        [ProducesResponseType(200, Type = typeof(ActorDto))]
         [ProducesResponseType(404)]
         public IActionResult GetById(int id)
         {
-            var actor = _mapper.Map<ActorViewModel>(_context.Actors.FirstOrDefault(a => a.Id == id));
+            var actor = _service.GetActor(id);
             if (actor == null) return NotFound();
             return Ok(actor);
         }
 
         [HttpPost]
-        public ActionResult<InputActorViewModel> PostActor(InputActorViewModel inputModel)
+        public ActionResult<InputActorViewModel> PostActor(ActorDto inputDto)
         {
+            var actor = _service.AddActor(inputDto);
 
-            var actor = _context.Add(_mapper.Map<Actor>(inputModel)).Entity;
-            _context.SaveChanges();
-
-            return CreatedAtAction("GetById", new { id = actor.Id }, _mapper.Map<InputActorViewModel>(inputModel));
+            return CreatedAtAction("GetById", new { id = actor.Id }, actor);
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateActor(int id, EditActorViewModel editModel)
+        public IActionResult UpdateActor(int id, ActorDto actorDto)
         {
-            try
-            {
-                var actor = _mapper.Map<Actor>(editModel);
-                actor.Id = id;
+            var actor = _service.UpdateActor(actorDto);
+            if (actor == null)
+                return BadRequest();
 
-                _context.Update(actor);
-                _context.SaveChanges();
-
-                return Ok(_mapper.Map<EditActorViewModel>(actor));
-            }
-            catch (DbUpdateException)
-            {
-                if (!ActorExists(id))
-                {
-                    return BadRequest();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            return Ok(actor); 
         }
 
         [HttpDelete("{id}")]
         public ActionResult<DeleteActorViewModel> DeleteActor(int id)
         {
-            var actor = _context.Actors.Find(id);
+            var actor = _service.DeleteActor(id);
             if (actor == null) return NotFound();
-            _context.Actors.Remove(actor);
-            _context.SaveChanges();
-            return Ok(_mapper.Map<DeleteActorViewModel>(actor));
+            
+            return Ok(actor);
         }
 
-        private bool ActorExists(int id)
-        {
-            return _context.Actors.Any(e => e.Id == id);
-        }
     }
 }

@@ -4,8 +4,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MoviesApp.Models
 {
-    public class MovieActor
+    public class MoviesActors
     {
+        public int Id { get; set; }
+
         [ForeignKey("Movie")]
         public int MovieId { get; set; }
         public virtual Movie Movie { get; set; }

@@ -36,7 +36,7 @@
         <div>
             @foreach (var items in Model.Movies)
             {
-                <p class="card-text"> @items.Movie.Title</p>
+                <p class="card-text"> @items.Title</p>
             }
         </div>
     }
@@ -47,6 +47,13 @@
 </div>
 <br />
 <div>
-    <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
-    <a class="btn btn-outline-primary" asp-action="Index">Back to List</a>
+    @if (User.IsInRole("Admin"))
+    {
+        <a class="btn btn-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        <a class="btn btn-outline-primary" asp-action="Index">Back to List</a>
+    }
+    else
+    {
+        <a class="btn btn-outline-primary" asp-action="Index">Back to List</a>
+    }
 </div>

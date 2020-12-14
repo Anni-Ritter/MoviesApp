@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using MoviesApp.Models;
@@ -10,80 +11,104 @@ namespace MoviesApp.Data
     {
         public static void Initialize(IServiceProvider serviceProvider)
         {
-            using (var context = new MoviesContext(
-                serviceProvider.GetRequiredService<
-                    DbContextOptions<MoviesContext>>()))
+            using (var context = new MoviesContext(serviceProvider.GetRequiredService<DbContextOptions<MoviesContext>>()))
             {
                 // Look for any movies.
-                if (context.Movies.Any())
+                if (!context.Movies.Any())
                 {
-                    return;   // DB has been seeded
+
+
+                    context.Movies.AddRange(
+                        new Movie
+                        {
+                            Title = "When Harry Met Sally",
+                            ReleaseDate = DateTime.Parse("1989-2-12"),
+                            Genre = "Romantic Comedy",
+                            Price = 7.99M
+                        },
+
+
+                        new Movie
+                        {
+                            Title = "Ghostbusters ",
+                            ReleaseDate = DateTime.Parse("1984-3-13"),
+                            Genre = "Comedy",
+                            Price = 8.99M
+                        },
+
+                        new Movie
+                        {
+                            Title = "Ghostbusters 2",
+                            ReleaseDate = DateTime.Parse("1986-2-23"),
+                            Genre = "Comedy",
+                            Price = 9.99M
+                        },
+
+                        new Movie
+                        {
+                            Title = "Rio Bravo",
+                            ReleaseDate = DateTime.Parse("1959-4-15"),
+                            Genre = "Western",
+                            Price = 3.99M
+                        }
+                    );
                 }
 
-                context.Movies.AddRange(
-                    new Movie
-                    {
-                        Title = "When Harry Met Sally",
-                        ReleaseDate = DateTime.Parse("1989-2-12"),
-                        Genre = "Romantic Comedy",
-                        Price = 7.99M
-                    },
-
-
-                    new Movie
-                    {
-                        Title = "Ghostbusters ",
-                        ReleaseDate = DateTime.Parse("1984-3-13"),
-                        Genre = "Comedy",
-                        Price = 8.99M
-                    },
-
-                    new Movie
-                    {
-                        Title = "Ghostbusters 2",
-                        ReleaseDate = DateTime.Parse("1986-2-23"),
-                        Genre = "Comedy",
-                        Price = 9.99M
-                    },
-
-                    new Movie
-                    {
-                        Title = "Rio Bravo",
-                        ReleaseDate = DateTime.Parse("1959-4-15"),
-                        Genre = "Western",
-                        Price = 3.99M
-                    }                   
-                );
-                
-                if(context.Actors.Any())
+                if (!context.Actors.Any())
                 {
-                    return;
+
+
+                    context.Actors.AddRange(
+
+                        new Actor
+                        {
+                            Name = "Jeff",
+                            LastName = "Goldblum",
+                            BirthDate = DateTime.Parse("1952-10-22")
+                        },
+
+                        new Actor
+                        {
+                            Name = "Morgan",
+                            LastName = "Freeman",
+                            BirthDate = DateTime.Parse("1937-7-1")
+                        },
+
+                        new Actor
+                        {
+                            Name = "Night",
+                            LastName = "Own",
+                            BirthDate = DateTime.Parse("1995-7-8")
+                        }
+                    );
+                    context.SaveChanges();
                 }
 
-                context.Actors.AddRange(
+                var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+                var roleManager = serviceProvider.GetService<RoleManager<IdentityRole>>();
 
-                    new Actor
-                    {
-                        Name = "Jeff",
-                        LastName = "Goldblum",
-                        BirthDate = DateTime.Parse("1952-10-22")
-                    },
+                if (!roleManager.RoleExistsAsync("Admin").Result)
+                {
+                    roleManager.CreateAsync(new IdentityRole { Name = "Admin" }).Wait();
+                }
 
-                    new Actor
+                if (userManager.FindByEmailAsync("admin@example.com").Result == null)
+                {
+                    var user = new ApplicationUser
                     {
-                        Name = "Morgan",
-                        LastName = "Freeman",
-                        BirthDate = DateTime.Parse("1937-7-1")
-                    },
-                    
-                    new Actor
+                        UserName = "admin@example.com",
+                        Email = "admin@example.com",
+                        FirstName = "Super",
+                        LastName = "Admin"
+                    };
+
+                    IdentityResult result = userManager.CreateAsync(user, "P@ssw0rd").Result;
+
+                    if (result.Succeeded)
                     {
-                        Name = "Night",
-                        LastName = "Own",
-                        BirthDate = DateTime.Parse("1995-7-8")
+                        userManager.AddToRoleAsync(user, "Admin").Wait();
                     }
-                );
-                context.SaveChanges();
+                }
             }       
         }
     }
